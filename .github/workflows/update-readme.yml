@@ -16,59 +16,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 << 'PYEOF'
+          python3 -c "
           import urllib.request, json, re, os
-
-          token = os.environ["GITHUB_TOKEN"]
-          username = "pexp13"
-
+          token = os.environ['GITHUB_TOKEN']
           req = urllib.request.Request(
-            f"https://api.github.com/users/{username}/events?per_page=100",
-            headers={
-              "Authorization": f"token {token}",
-              "Accept": "application/vnd.github.v3+json",
-              "User-Agent": "readme-bot"
-            }
+              'https://api.github.com/users/pexp13/events?per_page=100',
+              headers={
+                  'Authorization': 'token ' + token,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'User-Agent': 'readme-bot'
+              }
           )
           with urllib.request.urlopen(req) as r:
-            events = json.loads(r.read())
-
-          pr_events = [e for e in events if e["type"] == "PullRequestEvent"][:5]
-
+              events = json.loads(r.read())
+          pr_events = [e for e in events if e['type'] == 'PullRequestEvent'][:5]
           lines = []
           for i, e in enumerate(pr_events, 1):
-            p = e["payload"]
-            pr = p["pull_request"]
-            action = p["action"]
-            repo = e["repo"]["name"]
-            num = pr["number"]
-            url = pr["html_url"]
-            if action == "opened":
-              emoji, verb = "💪", "Opened PR"
-            elif action == "closed" and pr.get("merged"):
-              emoji, verb = "🎉", "Merged PR"
-            elif action == "closed":
-              emoji, verb = "❌", "Closed PR"
-            else:
-              emoji, verb = "🔄", "Updated PR"
-            lines.append(f"{i}. {emoji} {verb} [#{num}]({url}) in [{repo}](https://github.com/{repo})")
-
-          activity = "\n".join(lines) if lines else "No recent PR activity."
-
-          with open("README.md") as f:
-            content = f.read()
-
+              p = e['payload']
+              pr = p['pull_request']
+              action = p['action']
+              repo = e['repo']['name']
+              num = pr['number']
+              url = pr['html_url']
+              if action == 'opened':
+                  emoji, verb = '\U0001F4AA', 'Opened PR'
+              elif action == 'closed' and pr.get('merged'):
+                  emoji, verb = '\U0001F389', 'Merged PR'
+              elif action == 'closed':
+                  emoji, verb = '\u274C', 'Closed PR'
+              else:
+                  emoji, verb = '\U0001F504', 'Updated PR'
+              lines.append(str(i) + '. ' + emoji + ' ' + verb + ' [#' + str(num) + '](' + url + ') in [' + repo + '](https://github.com/' + repo + ')')
+          activity = '\n'.join(lines) if lines else 'No recent PR activity.'
+          with open('README.md') as f:
+              content = f.read()
           new = re.sub(
-            r"<!--START_SECTION:activity-->.*?<!--END_SECTION:activity-->",
-            f"<!--START_SECTION:activity-->\n{activity}\n<!--END_SECTION:activity-->",
-            content, flags=re.DOTALL
+              r'<!--START_SECTION:activity-->.*?<!--END_SECTION:activity-->',
+              '<!--START_SECTION:activity-->\n' + activity + '\n<!--END_SECTION:activity-->',
+              content, flags=re.DOTALL
           )
-
-          with open("README.md", "w") as f:
-            f.write(new)
-
-          print("README updated!")
-          PYEOF
+          with open('README.md', 'w') as f:
+              f.write(new)
+          print('README updated!')
+          "
       - name: Commit
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
