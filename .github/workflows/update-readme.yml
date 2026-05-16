@@ -15,6 +15,5 @@ jobs:
       - uses: jamesgeorge007/github-activity-readme@master
         with:
           readme_filepath: ./README.md
-          FILTER_EVENTS: PullRequestEvent
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
